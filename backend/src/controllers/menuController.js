@@ -1,0 +1,72 @@
+import pool from "../config/db.js";
+
+// ✅ Get All Menu Items
+export const getMenuItems = async (req, res) => {
+    try {
+        const [items] = await pool.query("SELECT * FROM menu_items");
+        res.json(items);
+    } catch (error) {
+        console.error("🔥 Error fetching menu:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+// ✅ Add a New Menu Item
+export const addMenuItem = async (req, res) => {
+    try {
+        const { name, description, price, category, is_available } = req.body;
+        if (!name || !price || !category) {
+            return res.status(400).json({ message: "Required fields are missing." });
+        }
+
+        const [result] = await pool.query(
+            "INSERT INTO menu_items (name, description, price, category, is_available) VALUES (?, ?, ?, ?, ?)",
+            [name, description, price, category, is_available || true]
+        );
+
+        res.status(201).json({ message: "Menu item added successfully", id: result.insertId });
+    } catch (error) {
+        console.error("🔥 Error adding menu item:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+// ✅ Update a Menu Item
+export const updateMenuItem = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, description, price, category, is_available } = req.body;
+
+        const [result] = await pool.query(
+            "UPDATE menu_items SET name=?, description=?, price=?, category=?, is_available=? WHERE id=?",
+            [name, description, price, category, is_available, id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Menu item not found" });
+        }
+
+        res.json({ message: "Menu item updated successfully" });
+    } catch (error) {
+        console.error("🔥 Error updating menu:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+// ✅ Delete a Menu Item
+export const deleteMenuItem = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const [result] = await pool.query("DELETE FROM menu_items WHERE id = ?", [id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Menu item not found" });
+        }
+
+        res.json({ message: "Menu item deleted successfully" });
+    } catch (error) {
+        console.error("🔥 Error deleting menu item:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
