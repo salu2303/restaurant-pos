@@ -20,7 +20,7 @@ export const addMenuItem = async (req, res) => {
         }
 
         const [result] = await pool.query(
-            "INSERT INTO menu_items (n, price, category, status) VALUES (?, ?, ?, ?)",
+            "INSERT INTO menu_items (item_name, price, category, status) VALUES (?, ?, ?, ?)",
             [item_name, price, category, status || true]
         );
 
