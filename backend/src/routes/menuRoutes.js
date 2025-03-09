@@ -11,8 +11,9 @@ import { protect, authorize } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 router.get("/", getMenuItems);
-router.post("/", protect, authorize(["admin", "cashier"]), addMenuItem);
-router.put("/:id", protect, authorize(["admin", "cashier"]), updateMenuItem);
-router.delete("/:id", protect, authorize(["admin"]), deleteMenuItem);
+router.post("/", protect, authorize(["Admin", "cashier"]), addMenuItem);
+// router.put("/:id", protect, authorize(["Admin", "cashier"]), updateMenuItem);
+router.put("/:id", updateMenuItem);
+router.delete("/:id", protect, authorize(["Admin"]), deleteMenuItem);
 
 export default router;

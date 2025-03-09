@@ -14,14 +14,14 @@ export const getMenuItems = async (req, res) => {
 // ✅ Add a New Menu Item
 export const addMenuItem = async (req, res) => {
     try {
-        const { name, description, price, category, is_available } = req.body;
-        if (!name || !price || !category) {
+        const { item_name, price, category, status } = req.body;
+        if (!item_name || !price || !category) {
             return res.status(400).json({ message: "Required fields are missing." });
         }
 
         const [result] = await pool.query(
-            "INSERT INTO menu_items (name, description, price, category, is_available) VALUES (?, ?, ?, ?, ?)",
-            [name, description, price, category, is_available || true]
+            "INSERT INTO menu_items (item_name, price, category, status) VALUES (?, ?, ?, ?)",
+            [item_name, price, category, status || true]
         );
 
         res.status(201).json({ message: "Menu item added successfully", id: result.insertId });
@@ -35,11 +35,12 @@ export const addMenuItem = async (req, res) => {
 export const updateMenuItem = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, price, category, is_available } = req.body;
+        console.log(req.body);
+        const { item_name, price, category, status } = req.body;
 
         const [result] = await pool.query(
-            "UPDATE menu_items SET name=?, description=?, price=?, category=?, is_available=? WHERE id=?",
-            [name, description, price, category, is_available, id]
+            "UPDATE menu_items SET item_name=?, price=?, category=?, status=? WHERE id=?",
+            [item_name, price, category, status, id]
         );
 
         if (result.affectedRows === 0) {
