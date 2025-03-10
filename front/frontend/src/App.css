@@ -3,9 +3,7 @@
 @tailwind utilities;
 
 #root {
-  
   @apply w-full mx-auto p-8 text-center;
-  
 }
 
 /* Logo Styling */

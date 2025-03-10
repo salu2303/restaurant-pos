@@ -5,14 +5,28 @@ import { FiEdit, FiTrash2 } from "react-icons/fi"; // Import icons
 
 const Menu = () => {
   const [menu, setMenu] = useState([]);
+  const [filteredMenu, setFilteredMenu] = useState([]); // Stores filtered items
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editItem, setEditItem] = useState(null); // Stores item being edited
+  const [editItem, setEditItem] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("All"); // Default: Show all
   const [newItem, setNewItem] = useState({
     item_name: "",
     category: "",
     price: "",
     image_url: "",
   });
+
+  const categories = [
+    "All", // ✅ This allows showing all items
+    "Beverages",
+    "Burger",
+    "Pasta",
+    "Pizza",
+    "Donuts",
+    "Beers & Alcohols",
+    "Salads",
+    "Desserts",
+  ]; 
 
   useEffect(() => {
     fetchMenu();
@@ -21,49 +35,21 @@ const Menu = () => {
   const fetchMenu = () => {
     apiClient
       .get("/menu")
-      .then((response) => setMenu(response.data))
+      .then((response) => {
+        setMenu(response.data);
+        setFilteredMenu(response.data); // Show all initially
+      })
       .catch((error) => console.error("Error:", error));
   };
 
-  const handleAddItem = () => {
-    if (!newItem.item_name || !newItem.price || !newItem.category) {
-      alert("Please fill all required fields.");
-      return;
+  const handleFilterChange = (category) => {
+    setSelectedCategory(category);
+    if (category === "All") {
+      setFilteredMenu(menu);
+    } else {
+      const filteredItems = menu.filter(item => item.category === category);
+      setFilteredMenu(filteredItems);
     }
-
-    apiClient
-      .post("/menu", newItem)
-      .then(() => {
-        fetchMenu();
-        setShowAddForm(false);
-        setNewItem({ item_name: "", category: "", price: "", image_url: "" });
-      })
-      .catch((error) => console.error("Error adding item:", error));
-  };
-
-  const handleDeleteItem = (id) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
-      apiClient
-        .delete(`/menu/${id}`)
-        .then(() => fetchMenu())
-        .catch((error) => console.error("Error deleting item:", error));
-    }
-  };
-
-  // Show edit form with existing data
-  const handleEditItem = (item) => {
-    setEditItem(item);
-  };
-
-  // Save edited item
-  const handleSaveEdit = () => {
-    apiClient
-      .put(`/menu/${editItem.id}`, editItem)
-      .then(() => {
-        fetchMenu();
-        setEditItem(null);
-      })
-      .catch((error) => console.error("Error updating item:", error));
   };
 
   return (
@@ -74,105 +60,33 @@ const Menu = () => {
           onClick={() => setShowAddForm(!showAddForm)}
           className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
         >
-          {showAddForm ? "Close" : "+ Add New Item"}
+          {showAddForm ? "-" : "+ "}
         </button>
       </div>
 
-      {/* Add Item Form */}
-      {showAddForm && (
-        <div className="bg-white p-4 rounded-lg border border-gray-200 mb-4">
-          <h2 className="text-lg font-semibold mb-2">Add New Menu Item</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <input
-              type="text"
-              placeholder="Item Name *"
-              value={newItem.item_name}
-              onChange={(e) => setNewItem({ ...newItem, item_name: e.target.value })}
-              className="border p-2 rounded-md w-full"
-              required
-            />
-            <input
-              type="text"
-              placeholder="Category *"
-              value={newItem.category}
-              onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-              className="border p-2 rounded-md w-full"
-              required
-            />
-            <input
-              type="number"
-              placeholder="Price *"
-              value={newItem.price}
-              onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
-              className="border p-2 rounded-md w-full"
-              required
-            />
-          </div>
-          <button
-            onClick={handleAddItem}
-            className="mt-3 bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition"
-          >
-            Save Item
-          </button>
-        </div>
-      )}
-
-      {/* Edit Item Form */}
-      {editItem && (
-        <div className="bg-white p-4 rounded-lg border border-gray-200 mb-4">
-          <h2 className="text-lg font-semibold mb-2">Edit Menu Item</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <input
-              type="text"
-              value={editItem.item_name}
-              onChange={(e) => setEditItem({ ...editItem, item_name: e.target.value })}
-              className="border p-2 rounded-md w-full"
-            />
-            <input
-              type="text"
-              value={editItem.category}
-              onChange={(e) => setEditItem({ ...editItem, category: e.target.value })}
-              className="border p-2 rounded-md w-full"
-            />
-            <input
-              type="number"
-              value={editItem.price}
-              onChange={(e) => setEditItem({ ...editItem, price: e.target.value })}
-              className="border p-2 rounded-md w-full"
-            />
-          </div>
-          <button
-            onClick={handleSaveEdit}
-            className="mt-3 bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition"
-          >
-            Save Changes
-          </button>
-          <button
-            onClick={() => setEditItem(null)}
-            className="ml-2 text-gray-600 hover:text-gray-900"
-          >
-            Cancel
-          </button>
-        </div>
-      )}
+      {/* ✅ Filters Dropdown */}
+      <div className="mb-4">
+        <label className="text-sm font-medium">Filters:</label>
+        <select
+          value={selectedCategory}
+          onChange={(e) => handleFilterChange(e.target.value)}
+          className="border p-2 rounded-md w-full mt-1"
+        >
+          {categories.map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {/* Minimal List View */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {menu.map((item) => (
+        {filteredMenu.map((item) => (
           <div
             key={item.id}
             className="bg-white rounded-md p-3 flex items-center space-x-4 border border-gray-300"
           >
-            {/* Image */}
-            {/* <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-              {item.image_url ? (
-                <img src={item.image_url} alt={item.item_name} className="w-full h-full object-cover rounded-full" />
-              ) : (
-                <span className="text-gray-400 text-xs">No Image</span>
-              )}
-            </div> */}
-
-            {/* Item Details */}
             <div className="flex-1">
               <h3 className="text-base font-medium">{item.item_name}</h3>
               <p className="text-xs text-gray-500">{item.category}</p>

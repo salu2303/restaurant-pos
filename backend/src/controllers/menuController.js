@@ -11,6 +11,18 @@ export const getMenuItems = async (req, res) => {
     }
 };
 
+// ✅ Get All Menu Items by category
+export const getMenuItemsByCategory = async (req, res) => {
+    try {
+        const [items] = await pool.query("SELECT * FROM menu_items where category = ?", [req.params.category]);
+        res.json(items);
+    } catch (error) {
+        console.error("🔥 Error fetching menu:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+
 // ✅ Add a New Menu Item
 export const addMenuItem = async (req, res) => {
     try {
