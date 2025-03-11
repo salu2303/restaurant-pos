@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  frontend:
+    build: ./front/frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    restart: always
+
+  backend:
+    build: ./backend
+    ports:
+      - "5001:5001"
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=Saloni@2001
+      - DB_NAME=restaurant-pos
+      - DB_PORT=3306
+    depends_on:
+      - db
+    restart: always
+
+  db:
+    image: mysql:latest
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Saloni@2001
+      MYSQL_DATABASE: restaurant-pos
+      # MYSQL_USER: root
+      # MYSQL_PASSWORD: Saloni@2001
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:

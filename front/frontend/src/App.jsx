@@ -11,7 +11,9 @@ import Inventory from "./pages/Inventory";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+
 import AdminNavbar from "./components/AdminNavbar";
+import ServerList from "./pages/ServerList";
 
 function App() {
   return (
@@ -28,7 +30,7 @@ const MainLayout = () => {
   
   return (
     <div>
-       {["/","/home", "/login","/menu","/orders","/payments","/inventory"].includes(location.pathname) ? <LoginNavbar /> : <Navbar />}
+       {["/","/home", "/login","/menu","/orders","/payments","/inventory","/serverlist"].includes(location.pathname) ? <LoginNavbar /> : <Navbar />}
 
       
       
@@ -39,13 +41,15 @@ const MainLayout = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/menu" element={<Menu />} />
         <Route path="/home" element={<Home />} />
-        
+        <Route path="/serverlist" element={<ServerList />} />
+
         {/* Protect these routes */}
         <Route path="/menu" element={<PrivateRoute><Menu /></PrivateRoute>} />
         <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
         <Route path="/payments" element={<PrivateRoute><Payments /></PrivateRoute>} />
         <Route path="/inventory" element={<PrivateRoute><Inventory /></PrivateRoute>} />
         <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+            
       </Routes>
     </div>
   );

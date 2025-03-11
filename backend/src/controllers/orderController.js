@@ -1,5 +1,53 @@
 import pool from "../config/db.js";
 
+
+
+// ✅ Fetch all orders with waiter name, order items, and payment details
+export const getOrdersBy = async (req, res) => {
+    try {
+        const [orders] = await pool.query(`
+            SELECT 
+                orders.id AS order_id,
+                orders.table_name,
+                orders.order_time,
+                orders.status AS order_status,
+                users.full_name AS waiter_name,
+                payments.payment_method,
+                payments.amount AS payment_amount,
+                payments.status AS payment_status
+            FROM orders
+            LEFT JOIN users ON orders.waiter_id = users.id
+            LEFT JOIN payments ON orders.id = payments.order_id
+            ORDER BY orders.order_time DESC;
+        `);
+
+        // Fetch order items separately and group by order_id
+        const [orderItems] = await pool.query(`
+            SELECT 
+                order_items.order_id,
+                menu_items.item_name,
+                order_items.quantity,
+                order_items.total_price
+            FROM order_items
+            JOIN menu_items ON order_items.menu_item_id = menu_items.id;
+        `);
+
+        // Organize order items under their respective order
+        const ordersWithItems = orders.map(order => {
+            return {
+                ...order,
+                items: orderItems.filter(item => item.order_id === order.order_id)
+            };
+        });
+
+        res.json(ordersWithItems);
+    } catch (error) {
+        console.error("🔥 Error fetching orders:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+
 // ✅ Get All Orders
 export const getOrders = async (req, res) => {
     try {
