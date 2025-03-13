@@ -93,3 +93,71 @@ export const getUserProfile = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+// ✅ Get all servers (role_id = 2)
+export const getServers = async (req, res) => {
+    try {
+        const [servers] = await pool.query(`
+            SELECT users.id, users.full_name, users.email, roles.role_name 
+            FROM users
+            JOIN roles ON users.role_id = roles.id
+            WHERE users.role_id = 2
+        `);
+        res.json(servers);
+    } catch (error) {
+        console.error("🔥 Error fetching servers:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+// ✅ Add a new server
+export const addServer = async (req, res) => {
+    try {
+        const { full_name, email,password } = req.body;
+
+        if (!full_name || !email) {
+            return res.status(400).json({ message: "Full name and email are required." });
+        }
+
+        await pool.query(
+            "INSERT INTO users (full_name, email, password, role_id) VALUES (?, ?, ?, 2)",
+            [full_name, email, password]
+        );
+
+        res.status(201).json({ message: "Server added successfully." });
+    } catch (error) {
+        console.error("🔥 Error adding server:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+// ✅ Update server details
+export const updateServer = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { full_name, email } = req.body;
+
+        await pool.query(
+            "UPDATE users SET full_name = ?, email = ? WHERE id = ? AND role_id = 2",
+            [full_name, email, id]
+        );
+
+        res.json({ message: "Server updated successfully." });
+    } catch (error) {
+        console.error("🔥 Error updating server:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+// ✅ Delete a server
+export const deleteServer = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await pool.query("DELETE FROM users WHERE id = ? AND role_id = 2", [id]);
+
+        res.json({ message: "Server deleted successfully." });
+    } catch (error) {
+        console.error("🔥 Error deleting server:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};

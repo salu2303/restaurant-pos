@@ -2,8 +2,13 @@ import pool from "../config/db.js";
 
 // ✅ Get All Menu Items
 export const getMenuItems = async (req, res) => {
+    
     try {
-        const [items] = await pool.query("SELECT * FROM menu_items");
+        const [items] = await pool.query("SELECT * FROM menu_item");
+        // console.log("Fetched Menu:", menuItems); // Debugging log
+       
+        console.log(`Item Price: ${items.price}, Type: ${typeof items.price}`);
+
         res.json(items);
     } catch (error) {
         console.error("🔥 Error fetching menu:", error.message);
@@ -14,7 +19,7 @@ export const getMenuItems = async (req, res) => {
 // ✅ Get All Menu Items by category
 export const getMenuItemsByCategory = async (req, res) => {
     try {
-        const [items] = await pool.query("SELECT * FROM menu_items where category = ?", [req.params.category]);
+        const [items] = await pool.query("SELECT * FROM menu_item where category = ?", [req.params.category]);
         res.json(items);
     } catch (error) {
         console.error("🔥 Error fetching menu:", error.message);
@@ -32,7 +37,8 @@ export const addMenuItem = async (req, res) => {
         }
 
         const [result] = await pool.query(
-            "INSERT INTO menu_items (item_name, price, category, status) VALUES (?, ?, ?, ?)",
+            "INSERT INTO menu_item (name, description, price, category, image, available) VALUES (?, ?, ?, ?,?,?)",
+            
             [item_name, price, category, status || true]
         );
 
@@ -48,11 +54,11 @@ export const updateMenuItem = async (req, res) => {
     try {
         const { id } = req.params;
         console.log(req.body);
-        const { item_name, price, category, status } = req.body;
+        const { name, description,price, category,image, available } = req.body;
 
         const [result] = await pool.query(
-            "UPDATE menu_items SET item_name=?, price=?, category=?, status=? WHERE id=?",
-            [item_name, price, category, status, id]
+            "UPDATE menu_item SET name=?, description=? ,price=?, category=?,image=?, available=? WHERE id=?",
+            [name, description,price, category,image, available, id]
         );
 
         if (result.affectedRows === 0) {
@@ -71,7 +77,7 @@ export const deleteMenuItem = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const [result] = await pool.query("DELETE FROM menu_items WHERE id = ?", [id]);
+        const [result] = await pool.query("DELETE FROM menu_item WHERE id = ?", [id]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: "Menu item not found" });

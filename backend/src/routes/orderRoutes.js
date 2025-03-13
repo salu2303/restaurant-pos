@@ -13,7 +13,7 @@ const router = express.Router();
 // ✅ Ensure role names match those in the `roles` table
 router.get("/", protect, authorize(["Admin", "Cashier", "Waiter"]), getOrdersBy);
 // router.get("/", protect, authorize(["Admin", "Cashier", "Waiter"]), getOrders);
-router.post("/", protect, authorize(["Waiter"]), createOrder);
+router.post("/", createOrder);
 router.put("/:id", protect, authorize(["Admin", "Cashier", "Waiter"]), updateOrderStatus);
 
 

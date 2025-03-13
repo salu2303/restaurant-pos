@@ -1,23 +1,23 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 #root {
-  @apply w-full mx-auto p-8 text-center;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
 }
 
-/* Logo Styling */
 .logo {
-  @apply h-24 p-6 transition-transform duration-300 ease-in-out;
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
 }
 .logo:hover {
-  @apply drop-shadow-lg;
+  filter: drop-shadow(0 0 2em #646cffaa);
 }
 .logo.react:hover {
-  @apply drop-shadow-lg;
+  filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
-/* Logo Animation */
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
@@ -27,19 +27,16 @@
   }
 }
 
-/* Only apply animation if motion is preferred */
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
   }
 }
 
-/* Card Styling */
 .card {
-  @apply p-6 bg-white shadow-lg rounded-xl;
+  padding: 2em;
 }
 
-/* Documentation Text */
 .read-the-docs {
-  @apply text-gray-500;
+  color: #888;
 }

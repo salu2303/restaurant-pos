@@ -12,7 +12,7 @@ apiClient.interceptors.request.use(config => {
   const token = localStorage.getItem("token");
 
   // ✅ If the request is for login or register, set baseURL to `/api/users/`
-  if (config.url.includes("/login") || config.url.includes("/register") ||  config.url.includes("/serverlist")) {
+  if (config.url.includes("/login") || config.url.includes("/register") ) {
     config.baseURL = `${API_BASE_URL}users/`;
   } else {
     config.baseURL = API_BASE_URL; // Use `/api/` for everything else

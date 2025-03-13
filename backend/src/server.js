@@ -20,12 +20,12 @@ app.use(morgan("dev")); // HTTP logging
 
 // Routes
 app.use("/api/users", userRoutes);
-app.use("/api/users/serverlist", userRoutes);
+app.use("/api/users/servers", userRoutes);
 app.use("/api/menu", menuRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/inventory", inventoryRoutes);
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
