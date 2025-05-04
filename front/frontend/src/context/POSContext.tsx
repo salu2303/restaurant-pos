@@ -21,6 +21,7 @@ interface POSContextType {
   // Orders
   currentOrder: Order | null;
   orders: Order[];
+  setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
   // setOrders,
   // Tables
   // setOrders: React.Dispatch<React.SetStateAction<Order[]>>,
@@ -55,10 +56,11 @@ export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
-  
+  const [completedOrdersCount, setCompletedOrdersCount] = useState<number>(0);
   // Auth state
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [dailyTotal, setDailyTotal] = useState<number>(0);
   
   // Check for existing session on load
   useEffect(() => {
@@ -292,23 +294,55 @@ export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Get daily total sales
-  const getDailyTotal = () => {
-    const today = new Date().toDateString();
-    return orders
-      .filter(order => 
-        order.status === 'completed' && 
-        new Date(order.completedAt as Date).toDateString() === today
-      )
-      .reduce((sum, order) => sum + order.total, 0);
-  };
+  // const getDailyTotal = () => {
+  //   const today = new Date().toDateString();
+  //   return orders
+  //     .filter(order => 
+  //       order.status === 'completed' && 
+  //       new Date(order.completedAt as Date).toDateString() === today
+  //     )
+  //     .reduce((sum, order) => sum + order.total, 0);
+  // };
+  useEffect(() => {
+    const fetchOrderStats = () => {
+      fetch("http://localhost:5001/api/orders/order-stats")
+        .then(response => response.json())
+        .then(data => {
+          setCompletedOrdersCount(data.completedOrdersCount);
+          setDailyTotal(data.dailyTotal);
+        })
+        .catch(error => {
+          console.error("Error fetching order stats:", error);
+        });
+    };
 
+    fetchOrderStats();
+  }, []);
+
+
+  // Function to get daily total sales
+  const getDailyTotal = () => {
+    return dailyTotal;
+  };
+  
   // Get completed orders count
+  useEffect(() => {
+    const fetchCompletedOrdersCount = () => {
+      fetch("http://localhost:5001/api/orders/completeordercount")
+        .then(response => response.json())
+        .then(data => {
+          setCompletedOrdersCount(data.count);
+        })
+        .catch(error => {
+          console.error("Error fetching completed orders count:", error);
+        });
+    };
+
+    fetchCompletedOrdersCount();
+  }, []);
+
   const getCompletedOrdersCount = () => {
-    const today = new Date().toDateString();
-    return orders.filter(order => 
-      order.status === 'completed' && 
-      new Date(order.completedAt as Date).toDateString() === today
-    ).length;
+    return completedOrdersCount;
   };
 
   // Get active orders count
@@ -336,6 +370,7 @@ export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     removeFromOrder,
     updateOrderItem,
     cancelOrder,
+    setOrders,
     completeOrder,
     getDailyTotal,
     getCompletedOrdersCount,

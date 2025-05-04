@@ -13,7 +13,7 @@ const Index = () => {
     tables 
   } = usePOS();
   
-  const dailyTotal = getDailyTotal();
+  const dailyTotal = Number(getDailyTotal()) || 0;
   const completedOrders = getCompletedOrdersCount();
   const activeOrders = getActiveOrdersCount();
   const availableTables = tables.filter(t => t.status === 'available').length;

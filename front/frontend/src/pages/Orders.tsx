@@ -115,6 +115,7 @@ const Orders = () => {
                   <StatusBadge status={currentOrder.status} />
                 </div>
                 <p className="text-sm text-muted-foreground">
+                  
                   Created {new Date(currentOrder.createdAt).toLocaleTimeString()}
                 </p>
               </CardHeader>

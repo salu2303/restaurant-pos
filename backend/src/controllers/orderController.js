@@ -10,16 +10,15 @@ export const getOrdersBy = async (req, res) => {
             SELECT 
                 orders.id AS order_id,
                 orders.table_name,
-                orders.order_time,
                 orders.status AS order_status,
-                users.full_name AS waiter_name,
+                
                 payments.payment_method,
                 payments.amount AS payment_amount,
                 payments.status AS payment_status
             FROM orders
-            LEFT JOIN users ON orders.waiter_id = users.id
-            LEFT JOIN payments ON orders.id = payments.order_id
-            ORDER BY orders.order_time DESC;
+            
+            LEFT JOIN payments ON orders.id = payments.order_id;
+            
         `);
 
         // Fetch order items separately and group by order_id
@@ -28,7 +27,7 @@ export const getOrdersBy = async (req, res) => {
                 order_items.order_id,
                 menu_items.item_name,
                 order_items.quantity,
-                order_items.total_price
+                order_items.price
             FROM order_items
             JOIN menu_items ON order_items.menu_item_id = menu_items.id;
         `);
@@ -81,7 +80,7 @@ export const createOrder = async (req, res) => {
     // }
     try {
         const { id, tableId, tableName, items, status, total, createdAt } = req.body;
-    
+        
         // ✅ Convert `createdAt` to MySQL `DATETIME` format
         const formattedCreatedAt = new Date(createdAt).toISOString().slice(0, 19).replace("T", " ");
     
@@ -128,4 +127,75 @@ export const updateOrderStatus = async (req, res) => {
         console.error("🔥 Error updating order:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
     }
+};
+
+export const completeOrder = async (req, res) => {
+    try {
+        const { orderId, paymentMethod, amount } = req.body;
+
+        // ✅ Update order status to "completed"
+        await pool.query(
+            "UPDATE orders SET status = 'completed' WHERE id = ?",
+            [orderId]
+        );
+
+        // ✅ Insert payment details into `payments` table
+        const paymentTime = new Date().toISOString().slice(0, 19).replace("T", " "); // Convert to MySQL format
+        const paymentStatus = "paid";
+
+        const [result] = await pool.query(
+            "INSERT INTO payments (order_id, payment_method, amount, payment_time, status) VALUES (?, ?, ?, ?, ?)",
+            [orderId, paymentMethod, amount, paymentTime, paymentStatus]
+        );
+
+        res.status(200).json({
+            message: "Payment completed successfully",
+            paymentId: result.insertId
+        });
+
+    } catch (error) {
+        console.error("Error completing payment:", error);
+        res.status(500).json({ error: "Failed to complete payment" });
+    }
+};
+
+export const getCompletedOrdersCount = async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            "SELECT COUNT(*) AS count FROM orders WHERE status = 'completed'"
+        );
+
+        res.json({ count: rows[0].count });
+    } catch (error) {
+        console.error("Error fetching completed orders count:", error);
+        res.status(500).json({ error: "Failed to fetch completed orders count" });
+    }
+};
+
+export const fetchOrderStats = async (req, res) => {
+    try {
+        const today = new Date().toISOString().split('T')[0];
+    
+        // Get completed orders count
+        const [countResult] = await pool.query(
+          "SELECT COUNT(*) AS count FROM orders WHERE status = 'completed' AND DATE(created_at) = ?",
+          [today]
+        );
+    
+        // Get daily sales total
+        const [totalResult] = await pool.query(
+          "SELECT COALESCE(SUM(total), 0) AS total FROM orders WHERE status = 'completed' AND DATE(created_at) = ?",
+          [today]
+        );
+    
+        res.json({
+          completedOrdersCount: countResult[0].count || 0,
+          dailyTotal: totalResult[0].total || 0, // Ensure this is always a number
+        });
+      } catch (error) {
+        console.error("Error fetching order stats:", error);
+        res.status(500).json({ error: "Failed to fetch order stats" });
+      }
+
+
 };
